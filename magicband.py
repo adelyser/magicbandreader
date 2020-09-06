@@ -31,19 +31,20 @@ ring_pixels = int(config['Settings']['ring_pixels'])
 mickey_pixels = int(config['Settings']['mickey_pixels'])
 
 COLORS = {
-    "red" : (0,255,0),
+    "red" : (255,0,0),
     "electricred" : (228,3,3),
+    "pink" : (255,20,147),
     "orange" : (255,165,0),
     "dark orange" : (255,140,0),
     "yellow" : (255,255,0),
     "canaryyellow" : (255,237,0),
-    "green": (255,0,0),
+    "green": (0,255,0),
     "lasallegreen" : (0,128,38),
     "blue" : (0,0,255),
     "patriarch" : (117,7,135),
     "lightblue" : (153,204,255),
     "white" : (255,255,255),
-    "purple" : (0,153,153),
+    "purple" : (153,0,153),
     "gray" : (128,128,128),
     "stitch" : (0,39,144),
     "rainbow" : (0,0,0),
@@ -51,8 +52,8 @@ COLORS = {
 }
 sequences = config['sequences']
 
-# GPIO Pin (Recommend GPIO18)
-pixel_pin = board.D18
+# GPIO Pin (Recommend GPIO10)
+pixel_pin = board.D10
 
 ######### DON'T EDIT BELOW THIS LINE ##########################
 
@@ -73,7 +74,11 @@ class MagicBand(cli.CommandLineInterface):
         self.RING_LIGHT_SIZE = 4
         self.total_pixels = ring_pixels+mickey_pixels
         self.ring_pixels = ring_pixels
-        self.pixels = neopixel.NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=neopixel.RGB)
+        if RGB_reversed:
+            po = neopixel.GRB
+        else:
+            po = neopixel.RGB
+        self.pixels = neopixel.NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
         self.rdwr_commands = { }
         self.playStartupSequence() 
         parser = ArgumentParser(
