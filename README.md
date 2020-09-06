@@ -18,17 +18,23 @@ BACKUP YOUR magicband.py BEFORE UPGRADING so you don't lose you sequences config
 * New color support including rainbow (see example config for details) Make sure you are using the newest color names.
 * Webhook support for turning on lights or opening locks when a magic band is played
 * Multiple sequence support per individual magic bands. (A single magicband can have multiple sequences assigned to it.)
+* Use SPI for controlling WS2812 Pixels. This allows on-board headphone jack to work and is more efficient than using PWM from GPIO-18.
 
 #Basic wiring:
-* Connect PIXEL LEDS to  DATA on GPIO-18 (pin 12), pixel GnD to GND (pin 6) and pixel positive to +5v (pin 2)
+* Connect PIXEL LEDS to DATA on GPIO-10 (pin 19), pixel GnD to GND (pin 6) and pixel positive to +5v (pin 2)
 * Connect USB RFID reader
-* Connect Speaker via HDMI connector (ONBOARD SPEAKER WILL NOT WORK DUE TO Pixel LEDS!)
+* Connect Speaker via headphone jack (Headphone jack works as long as you use GPIO-10)
 
 # Installation
 
 * See YouTube video https://youtu.be/HJ8CTLgmcSk  (UPDATED video coming June 15th 2020) 
 
 * Install Raspbian lite onto pi. BE SURE TO INSTALL THE LITE VERSION: https://www.raspberrypi.org/downloads/raspberry-pi-os/ 
+* Run "sudo raspi-config" and enable SPI:
+	* 5 - Interfacing Options
+	* P4 - SPI
+	* Select "Yes" when prompted
+	* reboot
 * Download magicbandreader-master from github (the big green "CLONE OR DOWNLOAD" button)
 * Copy magicbandreader.zip to pi and unzip it
 * cd magicband-reader-master
