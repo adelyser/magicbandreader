@@ -12,7 +12,8 @@ import sys
 import os
 import time
 import board
-import neopixel
+#import neopixel
+#import neopixel_spi
 import time
 import os.path
 from os import path
@@ -29,6 +30,8 @@ print_band_id = bool(config['Settings']['print_band_id'])
 reverse_circle = bool(config['Settings']['reverse_circle'])
 ring_pixels = int(config['Settings']['ring_pixels'])
 mickey_pixels = int(config['Settings']['mickey_pixels'])
+RGB_reversed = bool(config['Settings']['RGB_reversed'])
+mode = config['Settings']['MODE']
 
 COLORS = {
     "red" : (255,0,0),
@@ -52,8 +55,16 @@ COLORS = {
 }
 sequences = config['sequences']
 
-# GPIO Pin (Recommend GPIO10)
-pixel_pin = board.D10
+if mode == 'SPI':
+    import neopixel_spi as neopixel
+    # GPIO Pin 10
+    pixel_pin = board.SPI()
+    NeoPixel= neopixel.NeoPixel_SPI
+else:
+    import neopixel
+    # GPIO Pin (Recommend GPIO10)
+    pixel_pin = board.D10
+    NeoPixel = neopixel.NeoPixel
 
 ######### DON'T EDIT BELOW THIS LINE ##########################
 
@@ -78,7 +89,9 @@ class MagicBand(cli.CommandLineInterface):
             po = neopixel.GRB
         else:
             po = neopixel.RGB
-        self.pixels = neopixel.NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
+        #self.pixels = neopixel.NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
+        #self.pixels = neopixel.NeoPixel_SPI(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
+        self.pixels = NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
         self.rdwr_commands = { }
         self.playStartupSequence() 
         parser = ArgumentParser(
