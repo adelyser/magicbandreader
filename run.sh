@@ -1,4 +1,4 @@
 #!/bin/bash
 
 sudo amixer set Headphone 80%
-sudo /usr/bin/python3 magicband.py
+sudo /usr/bin/python3 magicband.py --device usb --device tty:serial0
