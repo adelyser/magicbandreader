@@ -12,8 +12,7 @@ import sys
 import os
 import time
 import board
-#import neopixel
-#import neopixel_spi
+import neopixel
 import time
 import os.path
 from os import path
@@ -44,6 +43,7 @@ COLORS = {
     "green": (0,255,0),
     "lasallegreen" : (0,128,38),
     "blue" : (0,0,255),
+    "navyblue" : (0,77,255),
     "patriarch" : (117,7,135),
     "lightblue" : (153,204,255),
     "white" : (255,255,255),
@@ -52,19 +52,30 @@ COLORS = {
     "stitch" : (0,39,144),
     "rainbow" : (0,0,0),
     "pride" : (0,0,1),
+    "dogs" : (0,0,2)
 }
 sequences = config['sequences']
 
+# Disney Dogs light sequence
+# time on, time off
+DOGS = [0.217, 0.013,
+        0.204, 0.146,
+        0.141, 0.126,
+        0.095, 0.020,
+        0.138, 0.100,
+        0.214, 0.114,
+        0.084, 0.129,
+        0.114, 0.018,
+        0.098, 0.193,
+        0.112, 0.018,
+        0.137, 0.142]
+
 if mode == 'SPI':
-    import neopixel_spi as neopixel
     # GPIO Pin 10
-    pixel_pin = board.SPI()
-    NeoPixel= neopixel.NeoPixel_SPI
-else:
-    import neopixel
-    # GPIO Pin (Recommend GPIO10)
     pixel_pin = board.D10
-    NeoPixel = neopixel.NeoPixel
+else:
+    # GPIO Pin (Recommend GPIO18)
+    pixel_pin = board.D18
 
 ######### DON'T EDIT BELOW THIS LINE ##########################
 
@@ -89,9 +100,7 @@ class MagicBand(cli.CommandLineInterface):
             po = neopixel.GRB
         else:
             po = neopixel.RGB
-        #self.pixels = neopixel.NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
-        #self.pixels = neopixel.NeoPixel_SPI(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
-        self.pixels = NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
+        self.pixels = neopixel.NeoPixel(pixel_pin, self.total_pixels, brightness=1.0, auto_write=False, pixel_order=po)
         self.rdwr_commands = { }
         self.playStartupSequence() 
         parser = ArgumentParser(
@@ -201,12 +210,12 @@ class MagicBand(cli.CommandLineInterface):
                 if (x+i) <= self.ring_pixels:
                     pixelNum = x + i
                     if reverse == True:
-                        pixelNum = self.ring_pixels- (pixelNum - 1)
+                        pixelNum = self.ring_pixels - pixelNum
                     self.pixels[pixelNum] = color
             if (i > size) :
                 off = (i-size)
                 if reverse == True:
-                    off = self.ring_pixels- (off - 1)
+                    off = self.ring_pixels - (off - 1)
                 self.pixels[off] = 0
             self.pixels.show()
             time.sleep(wait)
@@ -220,6 +229,17 @@ class MagicBand(cli.CommandLineInterface):
             self.pixels.show()
             time.sleep(wait_ms/1000)
 
+    def dogsBarking(self):
+        count = 1
+        for bark in DOGS:
+            if count & 1 == 1:
+                self.pixels.fill(COLORS['pink'])
+            else:
+                self.pixels.fill(0)
+            self.pixels.show()
+            time.sleep(bark)
+            count += 1
+
     def theaterChase(self, wait_ms=20, iterations=5):
         for j in range(256*iterations):
             for i in range(self.ring_pixels):
@@ -230,16 +250,16 @@ class MagicBand(cli.CommandLineInterface):
             self.pixels.show()
             time.sleep(wait_ms/1000)
 
-    def do_lights_circle(self,color, reverse):
+    def do_lights_circle(self, color, reverse):
         if color == COLORS['rainbow']:
             self.rainbowCycle(1,1)
         elif color == COLORS['pride']:
-            self.color_chase((228,3,3),.001, reverse)
-            self.color_chase((255,140,0),.0001, reverse)
-            self.color_chase((255,237,0),.0001, reverse)
-            self.color_chase((0,128,38),.0001, reverse)
-            self.color_chase((0,77,255),.0001, reverse)
-            self.color_chase((117,7,135),.0001, reverse)
+            self.color_chase(COLORS['electricred'],.001, reverse)
+            self.color_chase(COLORS['dark orange'],.0001, reverse)
+            self.color_chase(COLORS['canaryyellow'],.0001, reverse)
+            self.color_chase(COLORS['lasallegreen'],.0001, reverse)
+            self.color_chase(COLORS['navyblue'],.0001, reverse)
+            self.color_chase(COLORS['patriarch'],.0001, reverse)
         else:
             self.color_chase(color,.01, reverse)
             self.color_chase(color,.001, reverse)
@@ -247,19 +267,20 @@ class MagicBand(cli.CommandLineInterface):
             self.color_chase(color,.0001, reverse)
 
     def do_lights_on(self, color):
-        for i in range(self.total_pixels):
-            self.pixels[i] = color
+        self.pixels.fill(color)
         self.pixels.show()
 
     def do_lights_on_fade(self, color):
-        for i in range(self.total_pixels):
-            self.pixels[i] = color
-        j = .01
-        for x in range(100):
-            j = j + .01
-            self.pixels.brightness = j
-            self.pixels.show()
-            time.sleep(.001)
+        if color == COLORS['dogs']:
+            self.dogsBarking()
+        else:
+            self.pixels.fill(color)
+            j = .01
+            for x in range(100):
+                j = j + .01
+                self.pixels.brightness = j
+                self.pixels.show()
+                time.sleep(.001)
 
     def do_lights_off_fade(self):
         j = 1.01
@@ -271,8 +292,7 @@ class MagicBand(cli.CommandLineInterface):
         self.do_lights_off()
 
     def do_lights_off(self):
-        for i in range(self.total_pixels):
-            self.pixels[i] = 0
+        self.pixels.fill(0)
         self.pixels.show()
 
     def run(self):
@@ -284,7 +304,7 @@ class ArgparseError(SystemExit):
         super(ArgparseError, self).__init__(2, prog, message)
 
     def __str__(self):
-        return '{0}: {1}'.format(self.args[1], self.args[2])
+        return f'{self.args[1]}: {self.args[2]}'
 
 class ArgumentParser(argparse.ArgumentParser):
     def error(self, message):
