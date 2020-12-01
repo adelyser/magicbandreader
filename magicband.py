@@ -5,7 +5,6 @@ import binascii
 import logging
 import hashlib
 import struct
-#import ndef
 import hmac
 import cli
 import sys
@@ -52,7 +51,8 @@ COLORS = {
     "stitch" : (0,39,144),
     "rainbow" : (0,0,0),
     "pride" : (0,0,1),
-    "dogs" : (0,0,2)
+    "dogs" : (0,0,2),
+    "lightsaber" : (0,0,3)
 }
 sequences = config['sequences']
 
@@ -87,7 +87,7 @@ log = logging.getLogger('main')
 log.setLevel(logging.CRITICAL)
 
 # Pre init helps to get rid of sound lag
-pygame.mixer.pre_init(44100, -16, 1, 512 )
+pygame.mixer.pre_init(44100, -16, 1, 2048 )
 pygame.mixer.init()
 pygame.init()
 
@@ -220,6 +220,24 @@ class MagicBand(cli.CommandLineInterface):
             self.pixels.show()
             time.sleep(wait)
 
+    def color_grow(self, color, wait):
+        time.sleep(0.1)
+        for i in range(self.total_pixels):
+            self.pixels[i] = color
+            self.pixels.show()
+            time.sleep(wait)
+        '''
+        for i in range(self.total_pixels - 1, self.ring_pixels, -1):
+            self.pixels[i] = color
+            self.pixels.show()
+            time.sleep(wait)
+
+        for i in range(self.ring_pixels - 1, 0, -1):
+            self.pixels[i] = color
+            self.pixels.show()
+            time.sleep(wait)
+        '''
+
     def rainbowCycle(self, wait_ms, iterations):
         size = self.RING_LIGHT_SIZE
         for j in range(256*iterations):
@@ -273,6 +291,8 @@ class MagicBand(cli.CommandLineInterface):
     def do_lights_on_fade(self, color):
         if color == COLORS['dogs']:
             self.dogsBarking()
+        elif color == COLORS['lightsaber']:
+            self.color_grow(COLORS['red'], .005)
         else:
             self.pixels.fill(color)
             j = .01
